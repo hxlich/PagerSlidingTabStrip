@@ -39,9 +39,10 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import java.util.Locale;
-
 import com.astuetz.pagerslidingtabstrip.R;
+
+import java.util.ArrayList;
+import java.util.Locale;
 
 public class PagerSlidingTabStrip extends HorizontalScrollView {
 
@@ -97,6 +98,8 @@ public class PagerSlidingTabStrip extends HorizontalScrollView {
 	private int tabBackgroundResId = R.drawable.background_tab;
 
 	private Locale locale;
+
+	private ArrayList<Integer> mTextColors;
 
 	public PagerSlidingTabStrip(Context context) {
 		this(context, null);
@@ -182,8 +185,22 @@ public class PagerSlidingTabStrip extends HorizontalScrollView {
 		notifyDataSetChanged();
 	}
 
+	public void setViewPager(ViewPager pager, int[] colors){
+		setTextColors(pager, colors);
+		setViewPager(pager);
+	}
+
 	public void setOnPageChangeListener(OnPageChangeListener listener) {
 		this.delegatePageListener = listener;
+	}
+
+	public void setTextColors(ViewPager pager, int[] colors) throws NullPointerException{
+		int count = pager.getAdapter().getCount();
+		mTextColors = null;
+		mTextColors = new ArrayList<>();
+		for(int i = 0 ; i < count ; i++){
+			mTextColors.add(i,colors[i]);
+		}
 	}
 
 	public void notifyDataSetChanged() {
@@ -224,6 +241,19 @@ public class PagerSlidingTabStrip extends HorizontalScrollView {
 
 	}
 
+	private int getTabTextColor(final int position){
+		int color;
+		if(mTextColors == null){
+			color = tabTextColor;
+		}else {
+			try {
+				color = mTextColors.get(position);
+			} catch (IndexOutOfBoundsException e) {
+				color = tabTextColor;
+			}
+		}
+		return color;
+	}
 	private void addTextTab(final int position, String title) {
 
 		TextView tab = new TextView(getContext());
@@ -231,6 +261,7 @@ public class PagerSlidingTabStrip extends HorizontalScrollView {
 		tab.setGravity(Gravity.CENTER);
 		tab.setSingleLine();
 
+		tab.setTextColor(getTabTextColor(position));
 		addTab(position, tab);
 	}
 
@@ -269,7 +300,7 @@ public class PagerSlidingTabStrip extends HorizontalScrollView {
 				TextView tab = (TextView) v;
 				tab.setTextSize(TypedValue.COMPLEX_UNIT_PX, tabTextSize);
 				tab.setTypeface(tabTypeface, tabTypefaceStyle);
-				tab.setTextColor(tabTextColor);
+				tab.setTextColor(getTabTextColor(i));
 
 				// setAllCaps() is only available from API 14, so the upper case is made manually if we are on a
 				// pre-ICS-build
